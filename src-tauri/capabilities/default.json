@@ -1,0 +1,6 @@
+{
+  "identifier": "main",
+  "description": "Local window events only. File selection and compression are handled by Rust commands.",
+  "windows": ["main"],
+  "permissions": ["core:default"]
+}

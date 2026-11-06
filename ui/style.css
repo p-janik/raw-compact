@@ -1,0 +1,374 @@
+@font-face {
+  font-family: system;
+  src: local(-apple-system);
+}
+:root {
+  color-scheme: dark;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #eef2f7;
+  background: #11151b;
+  font-size: 13px;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+button {
+  font: inherit;
+  color: inherit;
+  background: #252d38;
+  border: 1px solid #394351;
+  border-radius: 8px;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-weight: 600;
+}
+button:hover {
+  background: #303b49;
+}
+button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+button.quiet {
+  background: transparent;
+  border-color: transparent;
+  color: #a7b1bf;
+}
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 28px 32px 25px;
+  border-bottom: 1px solid #242c36;
+}
+.brand {
+  display: flex;
+  gap: 13px;
+  align-items: center;
+}
+.mark {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 1px solid #4bbf9b;
+  border-radius: 13px;
+  color: #79e2bd;
+  font-size: 32px;
+  background: #183d34;
+}
+h1 {
+  font-size: 22px;
+  letter-spacing: -0.7px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.tag {
+  font-size: 9px;
+  letter-spacing: 1.1px;
+  color: #88a599;
+  background: #20372f;
+  padding: 4px 6px;
+  border-radius: 4px;
+}
+.brand p {
+  margin-top: 6px;
+  color: #9faab9;
+}
+.local {
+  font-size: 11px;
+  color: #9db4a9;
+}
+main {
+  padding: 24px 32px 0;
+  max-width: 1200px;
+  margin: auto;
+}
+h2 {
+  font-size: 14px;
+  letter-spacing: -0.1px;
+}
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 17px;
+}
+.section-head p {
+  color: #8f9aa9;
+  font-size: 12px;
+  margin-top: 6px;
+}
+.actions {
+  display: flex;
+  gap: 6px;
+}
+.queue {
+  background: #171d25;
+  border: 1px solid #303945;
+  border-radius: 12px;
+  padding: 20px 20px 0;
+}
+.queue.drag {
+  border-color: #73d8b6;
+  background: #1b302b;
+}
+#count {
+  font-size: 11px;
+  color: #a2afbe;
+  background: #2b3440;
+  border-radius: 5px;
+  padding: 2px 6px;
+  margin-left: 6px;
+}
+#clips {
+  max-height: 220px;
+  overflow: auto;
+  min-height: 110px;
+}
+.empty {
+  text-align: center;
+  padding: 15px 0 23px;
+  color: #9ca8b7;
+}
+.empty h3 {
+  font-size: 14px;
+  color: #c9d2df;
+  font-weight: 500;
+}
+.empty p {
+  font-size: 12px;
+  margin-top: 7px;
+  color: #7f8c9c;
+}
+.drop-icon {
+  font-size: 29px;
+  color: #698276;
+  margin-bottom: 8px;
+}
+.clip {
+  display: grid;
+  grid-template-columns: 36px 1fr auto 24px;
+  gap: 10px;
+  align-items: center;
+  padding: 13px 0;
+  border-top: 1px solid #27313c;
+}
+.clip:first-child {
+  border-top: 0;
+}
+.clip-icon {
+  width: 32px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  color: #a0c1b3;
+  background: #263a34;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.clip-name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.clip-meta {
+  font-size: 11px;
+  color: #8e9dad;
+  margin-top: 5px;
+}
+.clip-size {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: #d0d9e5;
+  font-size: 12px;
+}
+.clip-size small {
+  display: block;
+  color: #8b9aab;
+  margin-top: 5px;
+}
+.remove {
+  border: 0;
+  background: none;
+  padding: 4px;
+  color: #7d8a9b;
+}
+.status {
+  font-size: 11px;
+  margin-top: 6px;
+  color: #9ebdb0;
+  overflow-wrap: anywhere;
+}
+.status.error {
+  color: #eea394;
+}
+progress {
+  width: 100%;
+  height: 4px;
+  display: block;
+  margin-top: 9px;
+  accent-color: #7cdeb9;
+}
+.queue-total {
+  font-size: 11px;
+  color: #8e9eaf;
+  border-top: 1px solid #2b3542;
+  padding: 12px 0;
+  margin-top: 3px;
+}
+.settings {
+  margin-top: 25px;
+}
+.presets {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.preset {
+  cursor: pointer;
+  position: relative;
+  padding: 16px;
+  border: 1px solid #323e4c;
+  border-radius: 10px;
+  background: #171e27;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.preset.selected {
+  border-color: #78d7b4;
+  background: #1c302b;
+  box-shadow: 0 0 0 1px #78d7b426;
+}
+.preset input {
+  position: absolute;
+  opacity: 0;
+}
+.preset:focus-within {
+  outline: 2px solid #bcebd9;
+  outline-offset: 3px;
+}
+.preset-top {
+  font-size: 13px;
+  font-weight: 650;
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+.pill {
+  font-size: 10px;
+  color: #92ad9f;
+  font-weight: 400;
+  white-space: nowrap;
+}
+.preset strong {
+  font-size: 12px;
+  font-weight: 500;
+  color: #c6d1dc;
+}
+.preset > span:last-child {
+  font-size: 11px;
+  color: #8d9fae;
+}
+.note {
+  font-size: 11px;
+  line-height: 1.6;
+  color: #8f9cad;
+  margin-top: 12px;
+}
+.destination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  border: 1px solid #303b49;
+  border-radius: 10px;
+  padding: 15px 17px;
+  margin-top: 23px;
+  background: #171d25;
+}
+.destination > div {
+  min-width: 0;
+}
+.destination p {
+  margin-top: 7px;
+  font-size: 12px;
+  color: #a0adbf;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.destination button {
+  white-space: nowrap;
+}
+.destination-note {
+  font-size: 10px;
+  color: #738294;
+  margin: 8px 0 0 3px;
+}
+#message {
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-line;
+  max-height: 85px;
+  overflow: auto;
+  color: #e8b7a8;
+  margin-top: 14px;
+}
+#message:empty {
+  display: none;
+}
+footer {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #2b3541;
+  margin-top: 23px;
+  padding: 20px 0;
+}
+footer > div {
+  flex: 1;
+  min-width: 0;
+}
+footer strong {
+  font-size: 13px;
+}
+footer p {
+  font-size: 11px;
+  color: #8f9aaa;
+  margin-top: 6px;
+  overflow-wrap: anywhere;
+}
+.primary {
+  background: #8be4c1;
+  border-color: #8be4c1;
+  color: #112c22;
+  padding: 13px 21px;
+}
+.primary:hover {
+  background: #a6efcf;
+}
+.primary span {
+  margin-left: 20px;
+}
+.engine {
+  font-size: 10px;
+  color: #627183;
+  padding: 0 32px 17px;
+  text-align: center;
+}
+[hidden] {
+  display: none !important;
+}

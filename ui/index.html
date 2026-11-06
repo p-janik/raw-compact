@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>RAW Compact</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <span class="mark" aria-hidden="true">↘</span>
+        <div>
+          <h1>RAW Compact <span class="tag">PREVIEW</span></h1>
+          <p>Smaller Nikon footage. Still RAW.</p>
+        </div>
+      </div>
+      <span class="local">● &nbsp;Works locally</span>
+    </header>
+    <main>
+      <section class="queue" id="dropzone">
+        <div class="section-head">
+          <div>
+            <h2>Your clips <span id="count">0</span></h2>
+            <p>R3D NE and N-RAW · original resolution</p>
+          </div>
+          <div class="actions">
+            <button id="clear" class="quiet">Clear</button
+            ><button id="add">＋ Add clips</button>
+          </div>
+        </div>
+        <div id="clips">
+          <div class="empty">
+            <div class="drop-icon">↧</div>
+            <h3>Drop your RAW clips here</h3>
+            <p>or choose Add clips to get started</p>
+          </div>
+        </div>
+        <div class="queue-total" id="queue-total">
+          Your originals stay untouched.
+        </div>
+      </section>
+      <section class="settings">
+        <div class="section-head">
+          <div>
+            <h2>Choose compression</h2>
+            <p>All three keep RAW controls, audio and full resolution.</p>
+          </div>
+        </div>
+        <div class="presets" role="radiogroup" aria-label="Compression preset">
+          <label class="preset"
+            ><input type="radio" name="preset" value="light" /><span
+              class="preset-top"
+              >Light <span class="pill">~25% smaller</span></span
+            ><strong>Keep more detail</strong
+            ><span>A gentle starting point.</span></label
+          >
+          <label class="preset selected"
+            ><input type="radio" name="preset" value="medium" checked /><span
+              class="preset-top"
+              >Medium <span class="pill">~45% smaller</span></span
+            ><strong>Balance size and detail</strong
+            ><span>A balanced starting point.</span></label
+          >
+          <label class="preset"
+            ><input type="radio" name="preset" value="strong" /><span
+              class="preset-top"
+              >Strong <span class="pill">~65% smaller</span></span
+            ><strong>Save the most space</strong
+            ><span>More detail is discarded.</span></label
+          >
+        </div>
+        <p class="note">
+          Lossy RAW compression. Savings vary with the source. Keep originals
+          until you have reviewed the results.
+        </p>
+      </section>
+      <section class="destination">
+        <div>
+          <h2>Save to</h2>
+          <p id="folder" title="Choose an output folder">
+            Choose a folder, including an external SSD
+          </p>
+        </div>
+        <button id="choose">Choose folder…</button>
+      </section>
+      <div class="destination-note">
+        Each batch gets a new folder. Your clip names stay the same.
+      </div>
+      <div id="message" role="status" aria-live="polite"></div>
+      <footer>
+        <div>
+          <strong id="summary">Ready when you are</strong>
+          <p id="detail">
+            Compression and output checks happen on your computer.
+          </p>
+        </div>
+        <button id="cancel" hidden>Cancel batch</button
+        ><button id="start" class="primary" disabled>
+          Compress clips <span>↗</span>
+        </button>
+      </footer>
+    </main>
+    <div class="engine">
+      Powered by Blue Compressor 0.3.6 · RAW Compact 0.1.0
+    </div>
+  </body>
+</html>

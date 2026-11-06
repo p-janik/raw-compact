@@ -1,0 +1,12 @@
+/target/
+/node_modules/
+/.cargo/
+/dist/
+*.R3D
+*.r3d
+*.NEV
+*.nev
+*.partial
+.DS_Store
+._*
+/src-tauri/gen/
