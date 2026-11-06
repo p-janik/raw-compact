@@ -2,6 +2,12 @@
 
 A small desktop app for shrinking Nikon **R3D NE (.R3D)** and **N-RAW (.NEV)** footage while keeping the original resolution and RAW controls. Built with Tauri 2 and the open-source [Blue Compressor](https://github.com/redn3/blue-compressor) engine.
 
+## Downloads
+
+[Get the 0.1.0 preview](https://github.com/p-janik/raw-compact/releases/tag/preview-0.1.0): macOS Apple silicon ZIP, Windows x64 installers, and Linux x64 AppImage, Debian and RPM packages. macOS, Windows and Linux all passed the [build and test workflow](https://github.com/p-janik/raw-compact/actions/runs/42304913326).
+
+Only macOS Apple silicon has been exercised with real footage. Mac builds are ad hoc signed and not notarized; Windows installers are unsigned.
+
 ## First working version
 
 - Add multiple clips with a native file picker or drag and drop.
@@ -18,7 +24,7 @@ This first version intentionally has no trimming, card offload, proxy export, gr
 
 ## Build
 
-Install [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/), Rust 1.88+ and Node.js 22+.
+Install [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/), Rust 1.90+ and Node.js 22+.
 
 ```sh
 npm ci
