@@ -4,7 +4,9 @@ A small desktop app for shrinking Nikon **R3D NE (.R3D)** and **N-RAW (.NEV)** f
 
 ## Downloads
 
-[Get the 0.1.0 preview](https://github.com/p-janik/raw-compact/releases/tag/preview-0.1.0): macOS Apple silicon ZIP, Windows x64 installers, and Linux x64 AppImage, Debian and RPM packages. macOS, Windows and Linux all passed the [build and test workflow](https://github.com/p-janik/raw-compact/actions/runs/42304913326).
+[Get the 0.1.0 preview](https://github.com/p-janik/raw-compact/releases/tag/preview-0.1.0): macOS Apple silicon DMG/ZIP, Windows x64 installers, and Linux x64 AppImage, Debian and RPM packages. macOS, Windows and Linux all passed the [build and test workflow](https://github.com/p-janik/raw-compact/actions/runs/42304913326).
+
+On macOS, [download the DMG](https://github.com/p-janik/raw-compact/releases/download/preview-0.1.0/RAW-Compact_0.1.0_macOS_arm64.dmg), open it and drag RAW Compact to Applications or a folder on an external SSD. No developer tools or separate engine installation is required.
 
 Only macOS Apple silicon has been exercised with real footage. Mac builds are ad hoc signed and not notarized; Windows installers are unsigned.
 
