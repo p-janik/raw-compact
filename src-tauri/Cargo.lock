@@ -2915,6 +2915,7 @@ dependencies = [
  "tauri-plugin-dialog",
  "tempfile",
  "trash",
+ "walkdir",
 ]
 
 [[package]]

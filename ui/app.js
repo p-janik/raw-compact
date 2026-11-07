@@ -7,10 +7,21 @@ let clips = [],
   running = false,
   scanning = false,
   batchFolder = "",
-  mode = "beside";
+  mode = "beside",
+  inputRoots = [],
+  skippedInputs = [],
+  excluded = new Set();
 const ratios = { light: 0.75, medium: 0.55, strong: 0.35 };
 const bytes = (n) =>
   n >= 1e9 ? `${(n / 1e9).toFixed(2)} GB` : `${(n / 1e6).toFixed(1)} MB`;
+function comparablePath(path) {
+  const slash = "\\";
+  const prefix = slash + slash + "?" + slash;
+  const value = (path.startsWith(prefix) ? path.slice(prefix.length) : path)
+    .split(slash)
+    .join("/");
+  return /^[a-z]:/i.test(value) ? value.toLowerCase() : value;
+}
 function say(message = "") {
   $("message").textContent = message;
 }
@@ -28,12 +39,20 @@ function render() {
   $("start").disabled =
     running ||
     scanning ||
-    !clips.some((c) => c.state !== "done") ||
+    !clips.some((c) => c.state !== "done" && c.state !== "skipped") ||
     (mode === "folder" && !folder);
   $("start").hidden = running;
   $("cancel").hidden = !running;
   $("folder-options").hidden = mode !== "folder";
   $("trash").disabled = running || scanning;
+  $("skip-compressed").disabled = running || scanning;
+  $("scan-summary").textContent = skippedInputs.length
+    ? `${skippedInputs.length} compressed file/folder entries skipped. Renamed copies may not be recognised.`
+    : "Uses preset suffixes and RAW Compact output folders. Renamed copies may not be recognised.";
+  $("scan-summary").title = skippedInputs
+    .slice(0, 30)
+    .map((x) => `${x.path}: ${x.reason}`)
+    .join("\n");
   document.querySelectorAll('input[name="output-mode"]').forEach((el) => {
     el.disabled = running || scanning;
   });
@@ -41,7 +60,7 @@ function render() {
     mode === "beside"
       ? `Creates clip_${preset}.NEV beside each source, including files from different folders. Existing files are never replaced.`
       : "Creates a new batch folder and preserves clip names. Existing files are never replaced.";
-  for (const id of ["add", "clear", "choose"])
+  for (const id of ["add", "add-folder", "clear", "choose"])
     $(id).disabled = running || scanning;
   document.querySelectorAll("input[name=preset]").forEach((el) => {
     el.disabled = running;
@@ -52,8 +71,8 @@ function render() {
     const empty = element("div", "empty");
     empty.append(
       element("div", "drop-icon", "↧"),
-      element("h3", "", "Drop your RAW clips here"),
-      element("p", "", "or choose Add clips to get started"),
+      element("h3", "", "Drop RAW clips or folders here"),
+      element("p", "", "or choose Add clips / Add folder to get started"),
     );
     $("clips").append(empty);
   } else {
@@ -117,6 +136,7 @@ function render() {
         remove.setAttribute("aria-label", `Remove ${c.name}`);
         remove.disabled = running;
         remove.onclick = () => {
+          excluded.add(c.path);
           clips = clips.filter((x) => x !== c);
           render();
         };
@@ -135,16 +155,37 @@ function render() {
     : "Your originals stay untouched.";
 }
 async function addPaths(paths) {
-  if (!paths.length || running || scanning) return;
+  if (running || scanning) return;
+  for (const path of paths)
+    if (!inputRoots.includes(path)) inputRoots.push(path);
+  if (!inputRoots.length) return;
   scanning = true;
   say("");
   $("summary").textContent = "Reading clip details…";
   render();
   try {
-    const result = await invoke("scan", { paths });
-    for (const c of result.clips)
-      if (!clips.some((x) => x.path === c.path))
-        clips.push({ ...c, state: "ready" });
+    const previous = new Map(clips.map((c) => [c.path, c]));
+    const roots = inputRoots.filter(
+      (p) =>
+        !clips.some((c) => c.path === p && c.result?.original === "trashed"),
+    );
+    const result = await invoke("scan", {
+      paths: roots,
+      skipCompressed: $("skip-compressed").checked,
+    });
+    const added = paths.map(comparablePath);
+    for (const c of result.clips) {
+      const key = comparablePath(c.path);
+      if (added.some((p) => key === p || key.startsWith(p + "/")))
+        excluded.delete(c.path);
+    }
+    clips = result.clips
+      .filter((c) => !excluded.has(c.path))
+      .map((c) => previous.get(c.path) || { ...c, state: "ready" });
+    for (const c of previous.values())
+      if (c.state === "done" && !clips.some((x) => x.path === c.path))
+        clips.push(c);
+    skippedInputs = result.skipped;
     if (!folder && clips.length) folder = clips[0].parent;
     say(result.errors.join("\n"));
     $("summary").textContent = clips.length
@@ -164,6 +205,23 @@ $("add").onclick = async () => {
     say(String(e));
   }
 };
+$("add-folder").onclick = async () => {
+  try {
+    const path = await invoke("choose_folder");
+    if (path) await addPaths([path]);
+  } catch (e) {
+    say(String(e));
+  }
+};
+$("skip-compressed").onchange = async () => {
+  clips.forEach((c) => {
+    if (c.state === "skipped") {
+      c.state = "ready";
+      c.status = "";
+    }
+  });
+  await addPaths([]);
+};
 $("choose").onclick = async () => {
   try {
     const result = await invoke("choose_folder");
@@ -175,6 +233,9 @@ $("choose").onclick = async () => {
 };
 $("clear").onclick = () => {
   clips = [];
+  inputRoots = [];
+  skippedInputs = [];
+  excluded.clear();
   say();
   $("summary").textContent = "Ready when you are";
   $("detail").textContent =
@@ -185,6 +246,13 @@ document.querySelectorAll("input[name=preset]").forEach(
   (el) =>
     (el.onchange = () => {
       preset = el.value;
+      clips.forEach((c) => {
+        if (c.state === "skipped") {
+          c.state = "ready";
+          c.status = "";
+          c.plannedOutput = "";
+        }
+      });
       render();
     }),
 );
@@ -198,7 +266,7 @@ $("start").onclick = async () => {
     ? "Originals move to Trash only after full verification."
     : "Originals will be kept.";
   clips
-    .filter((c) => c.state !== "done")
+    .filter((c) => c.state !== "done" && c.state !== "skipped")
     .forEach((c) => {
       c.state = "ready";
       c.status = "";
@@ -207,11 +275,14 @@ $("start").onclick = async () => {
   render();
   try {
     await invoke("start", {
-      paths: clips.filter((c) => c.state !== "done").map((c) => c.path),
+      paths: clips
+        .filter((c) => c.state !== "done" && c.state !== "skipped")
+        .map((c) => c.path),
       folder,
       preset,
       mode,
       moveToTrash: $("trash").checked,
+      skipCompressed: $("skip-compressed").checked,
     });
   } catch (e) {
     running = false;
@@ -233,6 +304,12 @@ document.querySelectorAll('input[name="output-mode"]').forEach(
   (el) =>
     (el.onchange = () => {
       mode = el.value;
+      clips.forEach((c) => {
+        if (c.state === "skipped") {
+          c.state = "ready";
+          c.status = "";
+        }
+      });
       clips.forEach((c) => {
         c.plannedOutput = "";
       });
@@ -296,6 +373,15 @@ async function connect() {
       render();
     }
   });
+  await listen("job-skipped", ({ payload: p }) => {
+    const c = find(p.path);
+    if (c) {
+      c.state = "skipped";
+      c.plannedOutput = p.output;
+      c.status = `Skipped · ${p.reason}`;
+      render();
+    }
+  });
   await listen("job-error", ({ payload: p }) => {
     const c = find(p.path);
     if (c) {
@@ -307,7 +393,9 @@ async function connect() {
   await listen("batch-finished", () => {
     running = false;
     const done = clips.filter((c) => c.state === "done").length;
-    $("summary").textContent = `${done} of ${clips.length} clips completed`;
+    const skipped = clips.filter((c) => c.state === "skipped").length;
+    $("summary").textContent =
+      `${done} compressed · ${skipped} skipped · ${clips.length} clips`;
     $("detail").textContent = batchFolder || "Choose a folder and try again.";
     render();
   });

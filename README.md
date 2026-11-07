@@ -12,7 +12,9 @@ Only macOS Apple silicon has been exercised with real footage. Mac builds are ad
 
 ## First working version
 
-- Add multiple clips with a native file picker or drag and drop.
+- Add clips or whole folders with native pickers or drag and drop. Folder input searches subdirectories for Nikon `.NEV` and `.R3D` files and ignores proxy MP4s and unrelated files.
+- “Skip compressed copies and existing outputs” is on by default. It filters `_light`, `_medium` and `_strong` suffixes and `RAW Compact - …` batch folders, and skips a job whose destination already exists. Turn it off to include those copies intentionally; existing files are still never overwritten.
+- Detection uses names and locations because camera metadata is preserved. Renamed copies and files compressed by other tools may not be recognisable. Nested directory symlinks are not followed.
 - Light, Medium and Strong compression presets; Medium is the default.
 - Save copies beside each original as `clip_light.NEV`, `clip_medium.NEV` or `clip_strong.NEV` (and the equivalent `.R3D` names). Clips dropped from different folders stay in their respective folders, even with identical names.
 - Alternatively choose one output folder, including an external SSD; that mode creates a new batch folder and preserves the clip names.

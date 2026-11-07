@@ -27,14 +27,15 @@
           </div>
           <div class="actions">
             <button id="clear" class="quiet">Clear</button
+            ><button id="add-folder">Add folder…</button
             ><button id="add">＋ Add clips</button>
           </div>
         </div>
         <div id="clips">
           <div class="empty">
             <div class="drop-icon">↧</div>
-            <h3>Drop your RAW clips here</h3>
-            <p>or choose Add clips to get started</p>
+            <h3>Drop RAW clips or folders here</h3>
+            <p>or choose Add clips / Add folder to get started</p>
           </div>
         </div>
         <div class="queue-total" id="queue-total">
@@ -102,6 +103,14 @@
         <p class="destination-note" id="destination-note">
           Creates clip_medium.NEV beside each source, including files from
           different folders. Existing files are never replaced.
+        </p>
+        <label class="skip-option"
+          ><input type="checkbox" id="skip-compressed" checked /> Skip
+          compressed copies and existing outputs</label
+        >
+        <p class="destination-note" id="scan-summary">
+          Uses preset suffixes and RAW Compact output folders. Renamed copies
+          may not be recognised.
         </p>
         <label class="trash-option"
           ><input type="checkbox" id="trash" /> Move originals to Trash after

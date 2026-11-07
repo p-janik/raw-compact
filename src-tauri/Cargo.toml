@@ -16,6 +16,7 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = "0.10"
 tempfile = "3.27"
+walkdir = "2"
 bluecompress = { git = "https://github.com/redn3/blue-compressor", rev = "186fdf785fe0b735b27eb16b62fbf5a6c8cfab9d" }
 
 [target.'cfg(not(target_os = "linux"))'.dependencies]

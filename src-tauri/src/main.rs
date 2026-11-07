@@ -1,9 +1,9 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 mod compression;
+mod scanner;
 mod verification;
-use compression::{Clip, OutputMode, Preset};
+use compression::{OutputMode, Preset};
 use serde::Serialize;
-use std::path::Path;
 use std::sync::{
     atomic::{AtomicBool, Ordering},
     Arc,
@@ -56,28 +56,11 @@ async fn choose_folder(app: tauri::AppHandle) -> Result<Option<String>, String> 
     .map_err(|e| e.to_string())?
 }
 
-#[derive(Serialize)]
-struct Scanned {
-    clips: Vec<Clip>,
-    errors: Vec<String>,
-}
 #[tauri::command]
-async fn scan(paths: Vec<String>) -> Result<Scanned, String> {
-    tauri::async_runtime::spawn_blocking(move || {
-        let mut result = Scanned {
-            clips: vec![],
-            errors: vec![],
-        };
-        for path in paths {
-            match compression::inspect(Path::new(&path)) {
-                Ok(clip) => result.clips.push(clip),
-                Err(e) => result.errors.push(format!("{path}: {e}")),
-            }
-        }
-        result
-    })
-    .await
-    .map_err(|e| e.to_string())
+async fn scan(paths: Vec<String>, skip_compressed: bool) -> Result<scanner::Scanned, String> {
+    tauri::async_runtime::spawn_blocking(move || scanner::scan(&paths, skip_compressed))
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -108,6 +91,7 @@ async fn start(
     preset: Preset,
     mode: OutputMode,
     move_to_trash: bool,
+    skip_compressed: bool,
 ) -> Result<(), String> {
     if state.active.swap(true, Ordering::SeqCst) {
         return Err("A batch is already running.".into());
@@ -129,6 +113,10 @@ async fn start(
                         break;
                     }
                     let path = job.input.to_string_lossy().into_owned();
+                    if skip_compressed && std::fs::symlink_metadata(&job.output).is_ok() {
+                        let _ = app.emit("job-skipped",serde_json::json!({"path":path,"output":job.output,"reason":"Output already exists; original kept."}));
+                        continue;
+                    }
                     let _ = app.emit("job-started", &path);
                     let mut last_progress = Instant::now();
                     let mut last_phase = String::new();

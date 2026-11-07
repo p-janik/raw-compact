@@ -413,3 +413,15 @@ footer p {
 .clip-path.output {
   color: #a7cbbb;
 }
+
+.skip-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.skip-option input {
+  accent-color: #8be4c1;
+}
