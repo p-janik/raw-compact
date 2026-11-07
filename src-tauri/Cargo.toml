@@ -1,6 +1,6 @@
 [package]
 name = "raw-compact"
-version = "0.1.0"
+version = "0.2.0"
 description = "A small Nikon RAW compression app"
 edition = "2021"
 license = "Apache-2.0"
@@ -14,7 +14,15 @@ tauri = { version = "2", features = [] }
 tauri-plugin-dialog = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+sha2 = "0.10"
+tempfile = "3.27"
 bluecompress = { git = "https://github.com/redn3/blue-compressor", rev = "186fdf785fe0b735b27eb16b62fbf5a6c8cfab9d" }
+
+[target.'cfg(not(target_os = "linux"))'.dependencies]
+trash = "5.3"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+trash = { version = "5.3", default-features = false, features = ["portal"] }
 
 [profile.release]
 opt-level = 3

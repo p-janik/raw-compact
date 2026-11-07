@@ -1,12 +1,14 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 mod compression;
-use compression::{Clip, Preset};
+mod verification;
+use compression::{Clip, OutputMode, Preset};
 use serde::Serialize;
 use std::path::Path;
 use std::sync::{
     atomic::{AtomicBool, Ordering},
     Arc,
 };
+use std::time::{Duration, Instant};
 use tauri::{Emitter, Manager, State};
 use tauri_plugin_dialog::DialogExt;
 
@@ -88,6 +90,7 @@ struct Progress {
     path: String,
     fraction: f64,
     fps: f64,
+    phase: String,
 }
 #[derive(Clone, Serialize)]
 struct JobError {
@@ -103,6 +106,8 @@ async fn start(
     paths: Vec<String>,
     folder: String,
     preset: Preset,
+    mode: OutputMode,
+    move_to_trash: bool,
 ) -> Result<(), String> {
     if state.active.swap(true, Ordering::SeqCst) {
         return Err("A batch is already running.".into());
@@ -112,34 +117,42 @@ async fn start(
     let cancel = state.cancel.clone();
     let quitting = state.quitting.clone();
     tauri::async_runtime::spawn_blocking(move || {
-        let plan = compression::validate_batch(&paths, &folder)
-            .and_then(|folder| compression::create_batch_folder(&folder, preset));
+        let plan = compression::prepare_batch(&paths, &folder, mode, preset);
         match plan {
             Err(error) => {
                 let _ = app.emit("batch-error", error);
             }
-            Ok(output_folder) => {
-                let _ = app.emit(
-                    "batch-started",
-                    output_folder.to_string_lossy().into_owned(),
-                );
-                for path in paths {
+            Ok(batch) => {
+                let _ = app.emit("batch-started", &batch);
+                for job in batch.jobs {
                     if cancel.load(Ordering::SeqCst) {
                         break;
                     }
+                    let path = job.input.to_string_lossy().into_owned();
                     let _ = app.emit("job-started", &path);
+                    let mut last_progress = Instant::now();
+                    let mut last_phase = String::new();
                     let result = compression::compress(
-                        Path::new(&path),
-                        &output_folder,
+                        &job,
                         preset,
+                        move_to_trash,
                         &cancel,
-                        &mut |fraction, fps| {
+                        &mut |phase, fraction, fps| {
+                            if phase == last_phase
+                                && fraction < 1.0
+                                && last_progress.elapsed() < Duration::from_millis(100)
+                            {
+                                return;
+                            }
+                            last_phase = phase.into();
+                            last_progress = Instant::now();
                             let _ = app.emit(
                                 "job-progress",
                                 Progress {
                                     path: path.clone(),
                                     fraction,
                                     fps,
+                                    phase: phase.into(),
                                 },
                             );
                         },

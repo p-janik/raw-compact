@@ -76,18 +76,42 @@
           until you have reviewed the results.
         </p>
       </section>
-      <section class="destination">
-        <div>
-          <h2>Save to</h2>
-          <p id="folder" title="Choose an output folder">
-            Choose a folder, including an external SSD
-          </p>
+      <section class="output-settings">
+        <h2>Where to save copies</h2>
+        <div
+          class="output-modes"
+          role="radiogroup"
+          aria-label="Output location"
+        >
+          <label
+            ><input type="radio" name="output-mode" value="beside" checked />
+            Beside each original</label
+          >
+          <label
+            ><input type="radio" name="output-mode" value="folder" /> One output
+            folder</label
+          >
         </div>
-        <button id="choose">Choose folder…</button>
+        <div class="destination" id="folder-options" hidden>
+          <div>
+            <h3>Output folder</h3>
+            <p id="folder">Choose a folder, including an external SSD</p>
+          </div>
+          <button id="choose">Choose folder…</button>
+        </div>
+        <p class="destination-note" id="destination-note">
+          Creates clip_medium.NEV beside each source, including files from
+          different folders. Existing files are never replaced.
+        </p>
+        <label class="trash-option"
+          ><input type="checkbox" id="trash" /> Move originals to Trash after
+          full verification</label
+        >
+        <p class="destination-note" id="trash-note">
+          Off by default. Checks every output frame, metadata and audio first.
+          Emptying Trash is what frees the space.
+        </p>
       </section>
-      <div class="destination-note">
-        Each batch gets a new folder. Your clip names stay the same.
-      </div>
       <div id="message" role="status" aria-live="polite"></div>
       <footer>
         <div>
@@ -103,7 +127,7 @@
       </footer>
     </main>
     <div class="engine">
-      Powered by Blue Compressor 0.3.6 · RAW Compact 0.1.0
+      Powered by Blue Compressor 0.3.6 · RAW Compact 0.2.0
     </div>
   </body>
 </html>

@@ -4,9 +4,9 @@ A small desktop app for shrinking Nikon **R3D NE (.R3D)** and **N-RAW (.NEV)** f
 
 ## Downloads
 
-[Get the 0.1.0 preview](https://github.com/p-janik/raw-compact/releases/tag/preview-0.1.0): macOS Apple silicon DMG/ZIP, Windows x64 installers, and Linux x64 AppImage, Debian and RPM packages. macOS, Windows and Linux all passed the [build and test workflow](https://github.com/p-janik/raw-compact/actions/runs/42304913326).
+[Get the 0.2.0 preview](https://github.com/p-janik/raw-compact/releases/tag/preview-0.2.0): macOS Apple silicon DMG/ZIP, Windows x64 installers, and Linux x64 AppImage, Debian and RPM packages. Platform packages are built by the [build and test workflow](https://github.com/p-janik/raw-compact/actions).
 
-On macOS, [download the DMG](https://github.com/p-janik/raw-compact/releases/download/preview-0.1.0/RAW-Compact_0.1.0_macOS_arm64.dmg), open it and drag RAW Compact to Applications or a folder on an external SSD. No developer tools or separate engine installation is required.
+On macOS, [download the DMG](https://github.com/p-janik/raw-compact/releases/download/preview-0.2.0/RAW-Compact_0.2.0_macOS_arm64.dmg), open it and drag RAW Compact to Applications or a folder on an external SSD. No developer tools or separate engine installation is required.
 
 Only macOS Apple silicon has been exercised with real footage. Mac builds are ad hoc signed and not notarized; Windows installers are unsigned.
 
@@ -14,13 +14,17 @@ Only macOS Apple silicon has been exercised with real footage. Mac builds are ad
 
 - Add multiple clips with a native file picker or drag and drop.
 - Light, Medium and Strong compression presets; Medium is the default.
-- Choose any output folder, including an external SSD.
+- Save copies beside each original as `clip_light.NEV`, `clip_medium.NEV` or `clip_strong.NEV` (and the equivalent `.R3D` names). Clips dropped from different folders stay in their respective folders, even with identical names.
+- Alternatively choose one output folder, including an external SSD; that mode creates a new batch folder and preserves the clip names.
 - Sequential batch queue with live progress, speed and actual savings.
 - Cancel the batch; closing the app waits for cancellation and cleanup.
-- Each run creates a new output subfolder and preserves the original clip names.
-- Checks format, coded resolution, frame count, frame rate and audio track count after writing.
+- Existing files are never replaced. A name collision is reported and the original is kept.
+- Originals are kept by default. Optionally move each original to the operating system’s Trash after full verification. This never falls back to permanent deletion; failed or cancelled work keeps the original.
+- Keeping originals uses fast checks of format, coded resolution, frame count, frame rate and audio track count.
+- The Trash option also decodes every output frame, checks container/camera metadata and byte-identical audio/non-video data, and confirms the source has not changed. Unsupported no-overwrite renames use exclusive file creation plus checksum verification.
+- Shows the full source path, planned copy path, and whether each original was kept or moved to Trash.
 
-These are **lossy RAW** presets, approximately 25%, 45% and 65% smaller. The actual target is derived from each clip's source bitrate. Header checks are not a full decode or a visual quality guarantee. Review copies in your editor before deleting any originals.
+These are **lossy RAW** presets, approximately 25%, 45% and 65% smaller. The actual target is derived from each clip's source bitrate. Header checks are not a full decode. Even full verification cannot guarantee visual quality from lossy compression. Review copies in your editor before emptying Trash; disk space is freed when Trash is emptied.
 
 This first version intentionally has no trimming, card offload, proxy export, grading or built-in image comparison. It does not send footage anywhere and has no update check or telemetry.
 
@@ -46,6 +50,9 @@ cargo fmt --manifest-path src-tauri/Cargo.toml --check
 The GitHub workflow builds macOS, Windows and Linux packages. Only macOS Apple silicon has been exercised with real footage so far; other platforms require runtime qualification. Preview macOS builds are ad hoc signed, not notarized; Windows builds are unsigned.
 
 ## Validation so far
+
+Version 0.2.0 adds regression checks for suffix naming, cancellation, corrupt metadata, and refusing existing outputs. A separately invoked real-media integration test uses disposable copies in two folders on an external SSD, exercises name collisions, cancels during full verification, and moves only a disposable original to native Trash. Camera footage is not part of the repository. To run that test, set `RAW_COMPACT_TEST_CLIP` and `RAW_COMPACT_TEST_ROOT` and run `cargo test --release --manifest-path src-tauri/Cargo.toml -- --include-ignored`.
+
 
 On an Apple M4 Mac, a 561-frame Nikon ZR 6K R3D NE clip at 59.94 fps went from 4.35 GB to 2.47 GB at Medium (43.3% smaller) in a 28.3-second GUI run. Native file selection, external-drive output, live progress and cancellation were exercised. Cancellation left no partial video behind; the source SHA-256 stayed unchanged.
 

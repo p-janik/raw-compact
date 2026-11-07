@@ -372,3 +372,44 @@ footer p {
 [hidden] {
   display: none !important;
 }
+
+.output-settings {
+  margin-top: 22px;
+}
+.output-modes {
+  display: flex;
+  gap: 24px;
+  margin-top: 12px;
+}
+.output-modes label,
+.trash-option {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  cursor: pointer;
+  font-size: 12px;
+}
+.output-modes input,
+.trash-option input {
+  accent-color: #8be4c1;
+}
+.output-settings .destination {
+  margin-top: 13px;
+}
+.output-settings .destination h3 {
+  font-size: 12px;
+}
+.trash-option {
+  margin-top: 17px;
+  color: #dccab1;
+}
+.clip-path {
+  color: #899aad;
+  font-size: 10px;
+  margin-top: 5px;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
+.clip-path.output {
+  color: #a7cbbb;
+}

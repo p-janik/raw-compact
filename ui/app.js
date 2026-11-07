@@ -6,7 +6,8 @@ let clips = [],
   preset = "medium",
   running = false,
   scanning = false,
-  batchFolder = "";
+  batchFolder = "",
+  mode = "beside";
 const ratios = { light: 0.75, medium: 0.55, strong: 0.35 };
 const bytes = (n) =>
   n >= 1e9 ? `${(n / 1e9).toFixed(2)} GB` : `${(n / 1e6).toFixed(1)} MB`;
@@ -25,9 +26,21 @@ function render() {
     folder || "Choose a folder, including an external SSD";
   $("folder").title = folder || "Choose an output folder";
   $("start").disabled =
-    running || scanning || !clips.some((c) => c.state !== "done") || !folder;
+    running ||
+    scanning ||
+    !clips.some((c) => c.state !== "done") ||
+    (mode === "folder" && !folder);
   $("start").hidden = running;
   $("cancel").hidden = !running;
+  $("folder-options").hidden = mode !== "folder";
+  $("trash").disabled = running || scanning;
+  document.querySelectorAll('input[name="output-mode"]').forEach((el) => {
+    el.disabled = running || scanning;
+  });
+  $("destination-note").textContent =
+    mode === "beside"
+      ? `Creates clip_${preset}.NEV beside each source, including files from different folders. Existing files are never replaced.`
+      : "Creates a new batch folder and preserves clip names. Existing files are never replaced.";
   for (const id of ["add", "clear", "choose"])
     $(id).disabled = running || scanning;
   document.querySelectorAll("input[name=preset]").forEach((el) => {
@@ -57,6 +70,21 @@ function render() {
             "div",
             "clip-meta",
             `${c.format} · ${c.width} × ${c.height} coded · ${c.fps.toFixed(2)} fps · ${(c.frames / c.fps).toFixed(1)} s`,
+          ),
+        );
+        info.append(element("div", "clip-path", `Source: ${c.path}`));
+        const sep = c.parent.includes("\\") ? "\\" : "/";
+        const preview =
+          mode === "beside"
+            ? c.parent + sep + c.name.replace(/(\.[^.]+)$/, `_${preset}$1`)
+            : folder
+              ? folder + sep + "New batch" + sep + c.name
+              : "Choose an output folder";
+        info.append(
+          element(
+            "div",
+            "clip-path output",
+            `Copy: ${c.result?.output || c.plannedOutput || preview}`,
           ),
         );
         if (c.status)
@@ -166,12 +194,15 @@ $("start").onclick = async () => {
   say();
   $("cancel").disabled = false;
   $("summary").textContent = "Preparing batch…";
-  $("detail").textContent = "Originals are read only.";
+  $("detail").textContent = $("trash").checked
+    ? "Originals move to Trash only after full verification."
+    : "Originals will be kept.";
   clips
     .filter((c) => c.state !== "done")
     .forEach((c) => {
       c.state = "ready";
       c.status = "";
+      c.plannedOutput = "";
     });
   render();
   try {
@@ -179,6 +210,8 @@ $("start").onclick = async () => {
       paths: clips.filter((c) => c.state !== "done").map((c) => c.path),
       folder,
       preset,
+      mode,
+      moveToTrash: $("trash").checked,
     });
   } catch (e) {
     running = false;
@@ -196,6 +229,16 @@ $("cancel").onclick = async () => {
     say(String(e));
   }
 };
+document.querySelectorAll('input[name="output-mode"]').forEach(
+  (el) =>
+    (el.onchange = () => {
+      mode = el.value;
+      clips.forEach((c) => {
+        c.plannedOutput = "";
+      });
+      render();
+    }),
+);
 const find = (path) => clips.find((c) => c.path === path);
 async function connect() {
   await listen("tauri://drag-enter", () => $("dropzone").classList.add("drag"));
@@ -207,8 +250,13 @@ async function connect() {
     addPaths(payload.paths);
   });
   await listen("batch-started", ({ payload }) => {
-    batchFolder = payload;
-    $("detail").textContent = payload;
+    batchFolder = payload.destination;
+    for (const job of payload.jobs) {
+      const c = find(job.input);
+      if (c) c.plannedOutput = job.output;
+    }
+    $("detail").textContent = payload.destination;
+    render();
   });
   await listen("batch-error", ({ payload }) => say(payload));
   await listen("job-started", ({ payload }) => {
@@ -225,7 +273,7 @@ async function connect() {
     const c = find(p.path);
     if (c) {
       c.fraction = p.fraction;
-      c.status = `${Math.floor(p.fraction * 100)}% · ${p.fps.toFixed(1)} fps`;
+      c.status = `${p.phase} · ${Math.floor(p.fraction * 100)}%${p.fps > 0 ? ` · ${p.fps.toFixed(1)} fps` : ""}`;
       render();
     }
   });
@@ -234,7 +282,17 @@ async function connect() {
     if (c) {
       c.state = "done";
       c.result = p.result;
-      c.status = `Basic checks passed · ${(100 * (1 - p.result.output_bytes / c.bytes)).toFixed(1)}% smaller · ${p.result.seconds.toFixed(1)} s`;
+      const checked =
+        p.result.verification === "full"
+          ? "Full verification passed"
+          : "Basic checks passed";
+      const original =
+        p.result.original === "trashed"
+          ? "original in Trash"
+          : p.result.original === "check_trash"
+            ? "check Trash for original"
+            : "original kept";
+      c.status = `${checked} · ${original} · ${(100 * (1 - p.result.output_bytes / c.bytes)).toFixed(1)}% smaller${p.result.warning ? ` · ${p.result.warning}` : ""}`;
       render();
     }
   });
